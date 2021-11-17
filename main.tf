@@ -62,7 +62,7 @@ resource "aws_route_table_association" "route-one" {
 
 # Create security group for public http access for the ec2 with java api
 resource "aws_security_group" "hhs-api-sec-group" {
-  name        = "ac-sec-group"
+  name        = "hhs-api-sec-group"
   description = "allowing http and ssh"
   vpc_id      = aws_vpc.hhs-vpc.id
 
@@ -94,6 +94,13 @@ resource "aws_security_group" "hhs-api-sec-group" {
     cidr_blocks       = ["0.0.0.0/0"]
   }
 
+  ingress {
+    from_port         = 443
+    to_port           = 443
+    protocol          = "tcp"
+    cidr_blocks       = ["0.0.0.0/0"]
+  }
+
   tags = {
     Name = "hhs-api-sec-group"
   }
@@ -107,7 +114,7 @@ resource "aws_instance" "hhs-api-ec2" {
   associate_public_ip_address = true
   subnet_id = aws_subnet.hhs-public-subnet.id
   key_name = "hhs-key"
-  user_data = "${file("install.sh")}"
+  user_data = file("install.sh")
 
   tags = {
     Name = "hhs-api-ec2"
