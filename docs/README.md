@@ -1,35 +1,25 @@
-# User Profile Service
+# Simple Autos AWS Deployment w/ Terraform
+## Architecture Diagrams
+[Original Plan](https://github.com/aws-final-project/terraform/blob/main/docs/firstdiagram.drawio.png)<br>
+[Actual End Result](https://github.com/aws-final-project/terraform/blob/main/docs/finaldiagram.drawio.png)*
 
-Service that holds all the user account and profile information for the registered users of Find My Taco.
-- GET* all users: fmt-profiles.galvanizelabs.net/admin/users
-- GET single user: fmt-profiles.galvanizelabs.net/users/{username}
-- PATCH* single user (lock/unlock): fmt-profiles.galvanizelabs.net/admin/users/{username}/update-lock
-- PATCH single user (modify user details): fmt-profiles.galvanizelabs.net/users/{username}/update
-- GET pre-signed URL S3 bucket (upload profile picture): fmt-profiles.galvanizelabs.net/users/generate/s3-url
-<br> *Requires admin authentication all others require at least user authentication
+*not 100% finished...but 97% finished!
 
-[Authenticaton is required for all endpoints.](https://gitlab.com/stfa-cnd-08-2021/capstone/glab-idp-service/-/blob/main/README.md)
+## Prompts
+### The Team's Original Goals and How They Changed: 
+Our original goal was to deploy Simple Autos with the simple React UI we had began back in Tier 3 via Terraform. We wanted to experiment with Lambdas originally, but we quickly pivoted once we started messing around with getting that set up. We decided on using an EC2 instance to clone our repo and run our API and another EC2 instance with Postgres installed to run our database. We tried to limit ourselves to what was the most reasonable amount we could expect to accomplish in this short time frame. We knew we wanted a public and a private subnet, with our API in the public one and our database in the private one. 
 
-## Documentation
-- [UserProfile_openapi.json](https://gitlab.com/stfa-cnd-08-2021/capstone/user-accounts-profiles/-/blob/master/user-account-swagger.yml)
+Our end product was very similar, except we did not deploy our UI due to time, but we also decided to experiment with Amazon RDS running Postgres instead of using an EC2 instance. We successfully deployed our code to EC2 and got it running and connected to our RDS instance. Most of this happened in Terraform, but the connection piece we achieved manually due to running out of time to programmatically create the IAM role needed to assign the EC2 permission to run the needed connection commands. 
 
-## To run locally
+### What We Learned
+* SO MUCH BASH...like a lot. Mainly by bashing our heads against the computer screen. We got more familiar with different script commands and actions.
+* How to set up subnets and security groups to allow a private RDS instance to communicate with a public API.
+* How to use Terraform (duh).
+* We explored hooking up our EC2 to a Heroku-hosted database too, which was cool.
+* We learned about jq and how to use it to access values in an AWS CLI output.
+* A lot about Linux commands!
+* More about how to troubleshoot and documentation-hunt.
+* Started to understand more about subnets, cidr blocks, and other networking principles.
 
-- Install and create MySQL database
-- Create the following environment variables in the current session
-    ```bash
-    DB_HOST=localhost:3306
-    DB_NAME=<local db name>
-    DB_USER=<local db user>
-    DB_PWD=<local db password>
-    JWT_SECRET_KEY=jwtSecretKey
-    ```
-- Build and run
-- Server should be running on port 8080 by default
-
-## Microservice repo
-- [User Account and Profile repo](https://gitlab.com/stfa-cnd-08-2021/capstone/user-accounts-profiles)
-
-## Team memember responsiblities and roles
-All three team memebers (Christopher, Casey and Tod) shared all responsibilities and roles over the course of the 4 sprints of project time.  Each member took turns acting and scrum master, leading daily stand-ups and weekly retros.  We took turns driving while the other two members navigated and googled when necessary.
-
+### What we'd do next if given more time
+We would finish out our script with our last couple commands. We manually were able to attach the IAM role to our EC2 to use the AWS CLI to retreive data, but we would have loved to be able to automate those commands in our install script if we had had the time. We had the commands manually to a) retreive our secret from AWS Secrets Manager, b) retrieve the dynamically-created host name for our RDS instance, and c) successfully start our API inputting the required environment variables. All that was missing was the IAM role creation in Terraform. Given another 3-4 hours we would probably have finished the whole automation process.
