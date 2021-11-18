@@ -118,8 +118,7 @@ resource "aws_security_group" "hhs-api-sec-group" {
 
 # TODO: Create Security Group for RDS to allow internal traffic in
 resource "aws_security_group" "hhs-rds-sec-group" {
-  name        = "hhs-api-sec-group"
-  description = "allowing http and ssh"
+  name        = "hhs-rds-sec-group"
   vpc_id      = aws_vpc.hhs-vpc.id
 
   egress {
@@ -177,12 +176,12 @@ resource "aws_db_instance" "hhs-rds-postgres" {
   allocated_storage    = 10
   engine               = "postgres"
   instance_class       = "db.t3.micro"
-  name                 = "hhs-postgress"
+  name                 = "hhsPostgress"
   username             = "postgres"
   password             = "password"
   parameter_group_name = "default.postgres13"
-  db_subnet_group_name = "hhs-subnet-group"
-  vpc_security_group_ids = [aws_security_group.hhs-subnet-group.id]
+  db_subnet_group_name = aws_db_subnet_group.hhs-subnet-group.name
+  vpc_security_group_ids = [aws_security_group.hhs-api-sec-group.id, aws_security_group.hhs-rds-sec-group.id]
 
     tags = {
       Name = "aws-project-db"
