@@ -31,6 +31,16 @@ resource "aws_subnet" "hhs-public-subnet" {
   }
 }
 
+# Create private subnet for RDS
+resource "aws_subnet" "hhs-private-subnet" {
+  vpc_id = aws_vpc.hhs-vpc.id
+  cidr_block = "10.0.2.0/24"
+
+  tags = {
+    "Name" = "hss-private-subnet"
+  }
+}
+
 # Create the internet gateway
 resource "aws_internet_gateway" "hhs-gw" {
   vpc_id = aws_vpc.hhs-vpc.id
@@ -106,6 +116,39 @@ resource "aws_security_group" "hhs-api-sec-group" {
   }
 }
 
+# TODO: Create Security Group for RDS to allow internal traffic in
+resource "aws_security_group" "hhs-rds-sec-group" {
+  name        = "hhs-api-sec-group"
+  description = "allowing http and ssh"
+  vpc_id      = aws_vpc.hhs-vpc.id
+
+  egress {
+    from_port        = 0
+    to_port          = 0
+    protocol         = "-1"
+    cidr_blocks      = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    from_port         = 5432
+    to_port           = 5432
+    protocol          = "tcp"
+    cidr_blocks       = ["10.0.1.0/24"]
+  }
+
+  # Not sure this will work without a NAT?
+  ingress {
+    from_port         = 22
+    to_port           = 22
+    protocol          = "tcp"
+    cidr_blocks       = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "hhs-rds-sec-group"
+  }
+}
+
 # create EC2 that will have our api
 resource "aws_instance" "hhs-api-ec2" {
   ami           = "ami-04ad2567c9e3d7893" 
@@ -119,4 +162,29 @@ resource "aws_instance" "hhs-api-ec2" {
   tags = {
     Name = "hhs-api-ec2"
   }
+}
+
+resource "aws_db_subnet_group" "hhs-subnet-group" {
+  subnet_ids = [aws_subnet.hhs-public-subnet.id, aws_subnet.hhs-private-subnet.id]
+
+  tags = {
+    Name = "hhs-subnet-group"
+  }
+}
+
+# TODO: Create RDS Resource
+resource "aws_db_instance" "hhs-rds-postgres" {
+  allocated_storage    = 10
+  engine               = "postgres"
+  instance_class       = "db.t3.micro"
+  name                 = "hhs-postgress"
+  username             = "postgres"
+  password             = "password"
+  parameter_group_name = "default.postgres13"
+  db_subnet_group_name = "hhs-subnet-group"
+  vpc_security_group_ids = [aws_security_group.hhs-subnet-group.id]
+
+    tags = {
+      Name = "aws-project-db"
+    }
 }
