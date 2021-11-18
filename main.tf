@@ -187,3 +187,8 @@ resource "aws_db_instance" "hhs-rds-postgres" {
       Name = "aws-project-db"
     }
 }
+
+# Create Output Variable
+# output "ec2-public-IPV4" {
+#   value = aws_instance.web.public_ip
+# }
